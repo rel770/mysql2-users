@@ -1,6 +1,6 @@
 import { config } from "dotenv";
 import express from "express";
-import { testConnection, createDatabaseIfNotExists } from "./db/connection.js";
+import { testConnection, ensureDatabase } from "./db/connection.js";
 import { createUsersTable } from "./db/queries.js";
 import usersRouter from "./routes/users.js";
 import indexRouter from "./routes/index.js";
@@ -15,10 +15,10 @@ app.use(express.json());
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 
-// Start server after DB connection and table creation
+// Start server after DB creation, connection and table creation
 const startServer = async () => {
   try {
-    await createDatabaseIfNotExists();
+    await ensureDatabase();
     const dbConnected = await testConnection();
     if (!dbConnected) {
       console.error("Failed to connect to database. Server will not start.");
