@@ -1,3 +1,7 @@
+import { config } from "dotenv";
+
+config();
+
 // Database configuration
 export default {
   host: process.env.DB_HOST || "localhost",

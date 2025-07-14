@@ -1,8 +1,5 @@
 import { createPool } from "mysql2/promise";
-import { config } from "dotenv";
 import dbConfig from "../config/database.js";
-
-config();
 
 // Create database if not exists
 export const ensureDatabase = async () => {
