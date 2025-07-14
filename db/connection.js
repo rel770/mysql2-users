@@ -1,53 +1,44 @@
 import { createPool } from "mysql2/promise";
 import { config } from "dotenv";
+import dbConfig from "../config/database.js";
 
 config();
-
-const baseConfig = {
-  host: process.env.DB_HOST || "localhost",
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASSWORD || "",
-  port: process.env.DB_PORT || 3306,
-  waitForConnections: true,
-};
 
 // Create database if not exists
 export const ensureDatabase = async () => {
   const tempPool = createPool({
-    ...baseConfig,
+    ...dbConfig,
     connectionLimit: 1,
     queueLimit: 0,
   });
-  const dbName = process.env.DB_NAME || "users";
+  const dbName = dbConfig.database;
+  let connection;
   try {
-    const connection = await tempPool.getConnection();
+    connection = await tempPool.getConnection();
     await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
-    connection.release();
   } catch (error) {
     console.error("Error ensuring database exists:", error);
     throw error;
   } finally {
+    if (connection) connection.release();
     await tempPool.end();
   }
 };
 
 // connection pool configuration
-const pool = createPool({
-  ...baseConfig,
-  database: process.env.DB_NAME || "users",
-  connectionLimit: 10,
-  queueLimit: 0,
-});
+const pool = createPool(dbConfig);
 
 // Test connection to the db
 export const testConnection = async () => {
+  let connection;
   try {
-    const connection = await pool.getConnection();
+    connection = await pool.getConnection();
     console.log("Connected to MySQL database successfully!");
     connection.release();
     return true;
   } catch (error) {
     console.error("Error connecting to MySQL database:", error);
+    if (connection) connection.release();
     return false;
   }
 };
